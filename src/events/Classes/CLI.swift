@@ -25,6 +25,11 @@ enum CLI {
             self.handleTopLevelHelp()
         }
 
+        // Version: events -v / events --version
+        if command == "-v" || command == "--version" {
+            self.handleVersion()
+        }
+
         Logger.debug("Command: \(args.joined(separator: " "))")
 
         switch command {
@@ -95,6 +100,14 @@ enum CLI {
         default:
             JSONOutput.error(.unknownCommand(command: command))
         }
+    }
+
+    // MARK: - Version
+
+    private static func handleVersion() -> Never {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "unknown"
+        HelpFormatter.printAndExit("events \(version) (\(build))\n")
     }
 
     // MARK: - Help

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Hierarchical help system: `events -h` for command overview, `<command> -h` for detailed per-command help with parameters and output schema
 - `-h` and `--help` flags supported on all commands and subcommands
 - Help hint (`Use 'events -h' for help.`) appended to all error output on stderr
+- `--version` / `-v` flag to display version and build number (read from embedded Info.plist)
 
 ### Changed
 - Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
