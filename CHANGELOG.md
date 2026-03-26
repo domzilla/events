@@ -7,12 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-26
+
 ### Added
 - Homebrew tap publishing via GitHub Actions (xcodebuild-based bottle builds for arm64 and x86_64)
 - `.publish` configuration for the `publish` CLI tool
 - MIT license
-
-### Added
 - `--alarm <minutes>` flag on `events update` and `events reminders update` commands
 - `isSubscribed` and `isImmutable` fields to calendar JSON output
 - Recurrence support for `events create`: `--recurrence daily|weekly|monthly|yearly`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`
@@ -24,20 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `timeZone` field (IANA identifier) in event and reminder JSON output
 - Date output now includes timezone offset (e.g. `2026-03-27T09:00:00+01:00`)
 - `--occurrence-date` flag on `get`, `update`, and `delete` to target a specific occurrence of a recurring event
-
-### Changed
-- Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
-- Running `events` with no command now shows help instead of an error
-- Error messages for positional arguments now show `<identifier>` instead of `--identifier`
-- Removed stale "Run 'events status' for available commands" from unknown command error
-- `events status` now returns only authorization status (no longer includes command docs)
-
-### Changed
-- Replaced DZFoundation logging with CLI-specific Logger that writes to stderr
-- Debug output no longer pollutes stdout JSON stream
-- Removed DZFoundation dependency entirely
-
-### Added
 - CLI skeleton with JSON output envelope (`{"success": true/false, ...}`) and typed exit codes
 - `events status` — show authorization status and full command reference
 - `events calendars list` — list all event and reminder calendars with identifiers, types, colors
@@ -56,3 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `events reminders complete <identifier>` — mark a reminder as completed
 - EventStoreManager with TCC authorization flow for calendar and reminder access
 - ISO 8601 date parsing with full datetime, fractional seconds, and date-only support
+
+### Changed
+- Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
+- Running `events` with no command now shows help instead of an error
+- Error messages for positional arguments now show `<identifier>` instead of `--identifier`
+- Removed stale "Run 'events status' for available commands" from unknown command error
+- `events status` now returns only authorization status (no longer includes command docs)
+- Replaced DZFoundation logging with CLI-specific Logger that writes to stderr
+- Debug output no longer pollutes stdout JSON stream
+- Removed DZFoundation dependency entirely
