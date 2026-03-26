@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Date parsing now accepts local datetimes without timezone (e.g. `2026-03-27T09:00:00`), interpreted as local time
 - `timeZone` field (IANA identifier) in event and reminder JSON output
 - Date output now includes timezone offset (e.g. `2026-03-27T09:00:00+01:00`)
+- `--occurrence-date` flag on `get`, `update`, and `delete` to target a specific occurrence of a recurring event
 
 ### Changed
 - Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON

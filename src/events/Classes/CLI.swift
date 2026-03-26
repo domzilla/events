@@ -281,7 +281,9 @@ enum CLI {
                 JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
-            let event = try service.getEvent(identifier: identifier)
+            let occurrenceDate = try self.flagValue(for: "occurrence-date", in: args)
+                .map { try DateParsing.parseISO8601($0) }
+            let event = try service.getEvent(identifier: identifier, occurrenceDate: occurrenceDate)
             JSONOutput.success(event)
         } catch let error as EventsError {
             JSONOutput.error(error)
@@ -359,6 +361,8 @@ enum CLI {
                 JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
+            let occurrenceDate = try self.flagValue(for: "occurrence-date", in: args)
+                .map { try DateParsing.parseISO8601($0) }
             let title = self.flagValue(for: "title", in: args)
             let startDate = try self.flagValue(for: "start", in: args).map { try DateParsing.parseISO8601($0) }
             let endDate = try self.flagValue(for: "end", in: args).map { try DateParsing.parseISO8601($0) }
@@ -373,6 +377,7 @@ enum CLI {
 
             let event = try service.updateEvent(
                 identifier: identifier,
+                occurrenceDate: occurrenceDate,
                 title: title,
                 startDate: startDate,
                 endDate: endDate,
@@ -403,10 +408,12 @@ enum CLI {
                 JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
+            let occurrenceDate = try self.flagValue(for: "occurrence-date", in: args)
+                .map { try DateParsing.parseISO8601($0) }
             let spanStr = self.flagValue(for: "span", in: args)
             let span: EKSpan = spanStr == "future" ? .futureEvents : .thisEvent
 
-            try service.deleteEvent(identifier: identifier, span: span)
+            try service.deleteEvent(identifier: identifier, occurrenceDate: occurrenceDate, span: span)
             JSONOutput.success(DeletedDTO(deleted: true, identifier: identifier))
         } catch let error as EventsError {
             JSONOutput.error(error)
@@ -771,6 +778,12 @@ enum CLI {
                         required: true,
                         description: "Event identifier (positional argument, not a flag)"
                     ),
+                    ParameterInfoDTO(
+                        name: "--occurrence-date",
+                        type: "YYYY-MM-DD",
+                        required: false,
+                        description: "For recurring events: target a specific occurrence by date"
+                    ),
                 ],
                 output: OutputInfoDTO(
                     description: "Single event object",
@@ -871,6 +884,12 @@ enum CLI {
                         required: true,
                         description: "Event identifier (positional argument)"
                     ),
+                    ParameterInfoDTO(
+                        name: "--occurrence-date",
+                        type: "YYYY-MM-DD",
+                        required: false,
+                        description: "For recurring events: target a specific occurrence by date"
+                    ),
                     ParameterInfoDTO(name: "--title", type: "string", required: false, description: "New title"),
                     ParameterInfoDTO(
                         name: "--start",
@@ -928,6 +947,12 @@ enum CLI {
                         type: "string",
                         required: true,
                         description: "Event identifier (positional argument)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--occurrence-date",
+                        type: "YYYY-MM-DD",
+                        required: false,
+                        description: "For recurring events: target a specific occurrence by date"
                     ),
                     ParameterInfoDTO(
                         name: "--span",

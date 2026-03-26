@@ -70,10 +70,8 @@ final class EventService {
 
     // MARK: - Get
 
-    func getEvent(identifier: String) throws -> EventDTO {
-        guard let event = self.manager.store.event(withIdentifier: identifier) else {
-            throw EventsError.notFound(type: "Event", identifier: identifier)
-        }
+    func getEvent(identifier: String, occurrenceDate: Date? = nil) throws -> EventDTO {
+        let event = try self.findEvent(identifier: identifier, occurrenceDate: occurrenceDate)
         return EventDTO.from(event)
     }
 
@@ -137,6 +135,7 @@ final class EventService {
 
     func updateEvent(
         identifier: String,
+        occurrenceDate: Date? = nil,
         title: String? = nil,
         startDate: Date? = nil,
         endDate: Date? = nil,
@@ -149,9 +148,7 @@ final class EventService {
     ) throws
         -> EventDTO
     {
-        guard let event = self.manager.store.event(withIdentifier: identifier) else {
-            throw EventsError.notFound(type: "Event", identifier: identifier)
-        }
+        let event = try self.findEvent(identifier: identifier, occurrenceDate: occurrenceDate)
 
         if let title { event.title = title }
         if let startDate { event.startDate = startDate }
@@ -187,10 +184,8 @@ final class EventService {
 
     // MARK: - Delete
 
-    func deleteEvent(identifier: String, span: EKSpan = .thisEvent) throws {
-        guard let event = self.manager.store.event(withIdentifier: identifier) else {
-            throw EventsError.notFound(type: "Event", identifier: identifier)
-        }
+    func deleteEvent(identifier: String, occurrenceDate: Date? = nil, span: EKSpan = .thisEvent) throws {
+        let event = try self.findEvent(identifier: identifier, occurrenceDate: occurrenceDate)
 
         let title = event.title ?? identifier
         try self.manager.store.remove(event, span: span, commit: true)
@@ -198,6 +193,23 @@ final class EventService {
     }
 
     // MARK: - Private
+
+    private func findEvent(identifier: String, occurrenceDate: Date?) throws -> EKEvent {
+        if let occurrenceDate {
+            let startOfDay = DateParsing.startOfDay(occurrenceDate)
+            let endOfDay = DateParsing.endOfDay(occurrenceDate)
+            let predicate = self.manager.store.predicateForEvents(withStart: startOfDay, end: endOfDay, calendars: nil)
+            let events = self.manager.store.events(matching: predicate)
+            guard let event = events.first(where: { $0.eventIdentifier == identifier }) else {
+                throw EventsError.notFound(type: "Event", identifier: identifier)
+            }
+            return event
+        }
+        guard let event = self.manager.store.event(withIdentifier: identifier) else {
+            throw EventsError.notFound(type: "Event", identifier: identifier)
+        }
+        return event
+    }
 
     private func resolveCalendars(calendarID: String?, entityType _: EKEntityType) -> [EKCalendar]? {
         guard let calendarID else { return nil }
