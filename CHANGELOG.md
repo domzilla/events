@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `-h` and `--help` flags supported on all commands and subcommands
 
 ### Changed
+- Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
 - `events status` now returns only authorization status (no longer includes command docs)
 
 ### Changed

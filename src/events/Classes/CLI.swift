@@ -104,52 +104,57 @@ enum CLI {
     }
 
     private static func handleTopLevelHelp() -> Never {
-        let help = HelpDTO(
-            usage: "Use '<command> -h' for detailed help on a specific command.",
-            commands: [
-                HelpCommandDTO(
-                    command: "events status",
-                    description: "Show calendar and reminders authorization status"
-                ),
-                HelpCommandDTO(command: "events calendars list", description: "List all calendars"),
-                HelpCommandDTO(command: "events list", description: "List events by date or date range"),
-                HelpCommandDTO(command: "events search", description: "Search events by keyword"),
-                HelpCommandDTO(command: "events get <id>", description: "Get a single event by identifier"),
-                HelpCommandDTO(command: "events create", description: "Create a new event"),
-                HelpCommandDTO(command: "events update <id>", description: "Update an existing event"),
-                HelpCommandDTO(command: "events delete <id>", description: "Delete an event"),
-                HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
-                HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
-                HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
-                HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
-                HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
-                HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
-                HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
-            ]
+        let commands = [
+            HelpCommandDTO(
+                command: "events status",
+                description: "Show calendar and reminders authorization status"
+            ),
+            HelpCommandDTO(command: "events calendars list", description: "List all calendars"),
+            HelpCommandDTO(command: "events list", description: "List events by date or date range"),
+            HelpCommandDTO(command: "events search", description: "Search events by keyword"),
+            HelpCommandDTO(command: "events get <id>", description: "Get a single event by identifier"),
+            HelpCommandDTO(command: "events create", description: "Create a new event"),
+            HelpCommandDTO(command: "events update <id>", description: "Update an existing event"),
+            HelpCommandDTO(command: "events delete <id>", description: "Delete an event"),
+            HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
+            HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
+            HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
+            HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
+            HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
+            HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
+            HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
+        ]
+        let text = HelpFormatter.formatCommandList(
+            title: "events - Calendar and Reminders CLI",
+            baseCommand: "events",
+            commands: commands
         )
-        JSONOutput.success(help)
+        HelpFormatter.printAndExit(text)
     }
 
     private static func handleRemindersHelp() -> Never {
-        let help = HelpDTO(
-            usage: "Use '<command> -h' for detailed help on a specific command.",
-            commands: [
-                HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
-                HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
-                HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
-                HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
-                HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
-                HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
-                HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
-            ]
+        let commands = [
+            HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
+            HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
+            HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
+            HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
+            HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
+            HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
+            HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
+        ]
+        let text = HelpFormatter.formatCommandList(
+            title: "events reminders - Reminder commands",
+            baseCommand: "events reminders",
+            commands: commands
         )
-        JSONOutput.success(help)
+        HelpFormatter.printAndExit(text)
     }
 
     private static func handleCommandHelp(_ commandName: String) -> Never {
         let allCommands = self.commandList()
         if let cmd = allCommands.first(where: { self.matchesCommand($0.command, name: commandName) }) {
-            JSONOutput.success(cmd)
+            let text = HelpFormatter.formatCommandHelp(cmd)
+            HelpFormatter.printAndExit(text)
         }
         JSONOutput.error(.unknownCommand(command: commandName))
     }

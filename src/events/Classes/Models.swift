@@ -16,11 +16,6 @@ struct DeletedDTO: Codable {
     let identifier: String
 }
 
-struct HelpDTO: Codable {
-    let usage: String
-    let commands: [HelpCommandDTO]
-}
-
 struct HelpCommandDTO: Codable {
     let command: String
     let description: String
