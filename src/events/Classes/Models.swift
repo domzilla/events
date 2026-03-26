@@ -39,6 +39,8 @@ struct CalendarDTO: Codable {
     let sourceName: String
     let color: String
     let isReadOnly: Bool
+    let isSubscribed: Bool
+    let isImmutable: Bool
 
     static func from(_ calendar: EKCalendar, entityType: String) -> CalendarDTO {
         let colorHex: String
@@ -59,7 +61,9 @@ struct CalendarDTO: Codable {
             entityType: entityType,
             sourceName: calendar.source?.title ?? "Unknown",
             color: colorHex,
-            isReadOnly: !calendar.allowsContentModifications
+            isReadOnly: !calendar.allowsContentModifications,
+            isSubscribed: calendar.isSubscribed,
+            isImmutable: calendar.isImmutable
         )
     }
 }
