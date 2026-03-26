@@ -52,11 +52,11 @@ enum EventsError: Error {
         case let .eventKitError(underlying):
             "EventKit error: \(underlying.localizedDescription)"
         case let .missingRequiredArgument(name):
-            "Missing required argument: --\(name)"
+            "Missing required argument: \(name)"
         case let .invalidArgument(name, value):
-            "Invalid value '\(value)' for argument: --\(name)"
+            "Invalid value '\(value)' for argument: \(name)"
         case let .unknownCommand(command):
-            "Unknown command: \(command). Run 'events status' for available commands."
+            "Unknown command: \(command)"
         }
     }
 

@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
+- Running `events` with no command now shows help instead of an error
+- Error messages for positional arguments now show `<identifier>` instead of `--identifier`
+- Removed stale "Run 'events status' for available commands" from unknown command error
 - `events status` now returns only authorization status (no longer includes command docs)
 
 ### Changed

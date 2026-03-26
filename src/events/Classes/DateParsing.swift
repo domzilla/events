@@ -49,7 +49,7 @@ enum DateParsing {
         if let date = self.dateOnly.date(from: string) {
             return date
         }
-        throw EventsError.invalidArgument(name: "date", value: string)
+        throw EventsError.invalidArgument(name: "--date", value: string)
     }
 
     static func formatISO8601(_ date: Date) -> String {

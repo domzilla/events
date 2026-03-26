@@ -17,7 +17,7 @@ enum CLI {
         let args = Array(arguments.dropFirst())
 
         guard let command = args.first else {
-            JSONOutput.error(.unknownCommand(command: ""))
+            self.handleTopLevelHelp()
         }
 
         // Top-level help: events -h / events --help / events help
@@ -265,7 +265,7 @@ enum CLI {
             let service = EventService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let event = try service.getEvent(identifier: identifier)
@@ -343,7 +343,7 @@ enum CLI {
             let service = EventService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let title = self.flagValue(for: "title", in: args)
@@ -387,7 +387,7 @@ enum CLI {
             let service = EventService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let spanStr = self.flagValue(for: "span", in: args)
@@ -469,7 +469,7 @@ enum CLI {
             let service = ReminderService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let reminder = try service.getReminder(identifier: identifier)
@@ -521,7 +521,7 @@ enum CLI {
             let service = ReminderService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let title = self.flagValue(for: "title", in: args)
@@ -555,7 +555,7 @@ enum CLI {
             let service = ReminderService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             try service.deleteReminder(identifier: identifier)
@@ -576,7 +576,7 @@ enum CLI {
             let service = ReminderService(manager: manager)
 
             guard let identifier = self.positionalArgument(at: 1, in: args) else {
-                JSONOutput.error(.missingRequiredArgument(name: "identifier"))
+                JSONOutput.error(.missingRequiredArgument(name: "<identifier>"))
             }
 
             let reminder = try service.completeReminder(identifier: identifier)
@@ -1163,7 +1163,7 @@ enum CLI {
 
     static func requiredFlagValue(for flag: String, in args: [String]) throws -> String {
         guard let value = self.flagValue(for: flag, in: args) else {
-            throw EventsError.missingRequiredArgument(name: flag)
+            throw EventsError.missingRequiredArgument(name: "--\(flag)")
         }
         return value
     }
