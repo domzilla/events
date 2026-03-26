@@ -247,6 +247,7 @@ enum CLI {
             let location = self.flagValue(for: "location", in: args)
             let notes = self.flagValue(for: "notes", in: args)
             let isAllDay: Bool? = self.flagValue(for: "all-day", in: args).map { $0 == "true" }
+            let alarmMinutes = self.flagValue(for: "alarm", in: args).flatMap { Int($0) }
 
             let spanStr = self.flagValue(for: "span", in: args)
             let span: EKSpan = spanStr == "future" ? .futureEvents : .thisEvent
@@ -260,6 +261,7 @@ enum CLI {
                 isAllDay: isAllDay,
                 location: location,
                 notes: notes,
+                alarmMinutes: alarmMinutes,
                 span: span
             )
             JSONOutput.success(event)
@@ -420,13 +422,15 @@ enum CLI {
             let dueDate = try self.flagValue(for: "due", in: args).map { try DateParsing.parseISO8601($0) }
             let priority = self.flagValue(for: "priority", in: args).flatMap { Int($0) }
             let notes = self.flagValue(for: "notes", in: args)
+            let alarmMinutes = self.flagValue(for: "alarm", in: args).flatMap { Int($0) }
 
             let reminder = try service.updateReminder(
                 identifier: identifier,
                 title: title,
                 dueDate: dueDate,
                 priority: priority,
-                notes: notes
+                notes: notes,
+                alarmMinutes: alarmMinutes
             )
             JSONOutput.success(reminder)
         } catch let error as EventsError {
@@ -511,7 +515,7 @@ enum CLI {
                 description: "Create a new event"
             ),
             CommandInfoDTO(
-                command: "events update <identifier> [--title <t>] [--start <iso8601>] [--end <iso8601>] [--calendar <id>] [--location <s>] [--notes <s>] [--all-day <bool>] [--span this|future]",
+                command: "events update <identifier> [--title <t>] [--start <iso8601>] [--end <iso8601>] [--calendar <id>] [--location <s>] [--notes <s>] [--all-day <bool>] [--alarm <minutes>] [--span this|future]",
                 description: "Update an existing event"
             ),
             CommandInfoDTO(
@@ -539,7 +543,7 @@ enum CLI {
                 description: "Create a new reminder"
             ),
             CommandInfoDTO(
-                command: "events reminders update <identifier> [--title <t>] [--due <iso8601>] [--priority 0-9] [--notes <s>]",
+                command: "events reminders update <identifier> [--title <t>] [--due <iso8601>] [--priority 0-9] [--notes <s>] [--alarm <minutes>]",
                 description: "Update an existing reminder"
             ),
             CommandInfoDTO(

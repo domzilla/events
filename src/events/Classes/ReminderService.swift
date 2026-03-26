@@ -174,7 +174,8 @@ final class ReminderService {
         title: String? = nil,
         dueDate: Date? = nil,
         priority: Int? = nil,
-        notes: String? = nil
+        notes: String? = nil,
+        alarmMinutes: Int? = nil
     ) throws
         -> ReminderDTO
     {
@@ -189,6 +190,16 @@ final class ReminderService {
         if let dueDate { reminder.dueDateComponents = DateParsing.dateComponents(from: dueDate) }
         if let priority { reminder.priority = max(0, min(9, priority)) }
         if let notes { reminder.notes = notes }
+
+        if let minutes = alarmMinutes {
+            if let existing = reminder.alarms {
+                for alarm in existing {
+                    reminder.removeAlarm(alarm)
+                }
+            }
+            let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
+            reminder.addAlarm(alarm)
+        }
 
         try self.manager.store.save(reminder, commit: true)
         Logger.debug("Updated reminder: \(reminder.title ?? identifier)")

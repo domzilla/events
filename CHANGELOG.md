@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `--alarm <minutes>` flag on `events update` and `events reminders update` commands
+
 ### Changed
 - Replaced DZFoundation logging with CLI-specific Logger that writes to stderr
 - Debug output no longer pollutes stdout JSON stream

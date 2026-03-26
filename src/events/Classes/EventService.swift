@@ -132,6 +132,7 @@ final class EventService {
         isAllDay: Bool? = nil,
         location: String? = nil,
         notes: String? = nil,
+        alarmMinutes: Int? = nil,
         span: EKSpan = .thisEvent
     ) throws
         -> EventDTO
@@ -146,6 +147,16 @@ final class EventService {
         if let isAllDay { event.isAllDay = isAllDay }
         if let location { event.location = location }
         if let notes { event.notes = notes }
+
+        if let minutes = alarmMinutes {
+            if let existing = event.alarms {
+                for alarm in existing {
+                    event.removeAlarm(alarm)
+                }
+            }
+            let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
+            event.addAlarm(alarm)
+        }
 
         if let calendarID {
             guard let calendar = self.manager.store.calendar(withIdentifier: calendarID) else {
