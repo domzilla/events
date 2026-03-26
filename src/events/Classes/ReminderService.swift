@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 
@@ -87,7 +86,7 @@ final class ReminderService {
             }
         }
 
-        DZLog("Found \(filtered.count) reminders")
+        Logger.debug("Found \(filtered.count) reminders")
         return filtered.map { ReminderDTO.from($0) }
     }
 
@@ -106,7 +105,7 @@ final class ReminderService {
             return false
         }
 
-        DZLog("Search '\(query)' found \(filtered.count) matching reminders")
+        Logger.debug("Search '\(query)' found \(filtered.count) matching reminders")
         return filtered.map { ReminderDTO.from($0) }
     }
 
@@ -164,7 +163,7 @@ final class ReminderService {
         }
 
         try self.manager.store.save(reminder, commit: true)
-        DZLog("Created reminder: \(title) (\(reminder.calendarItemIdentifier))")
+        Logger.debug("Created reminder: \(title) (\(reminder.calendarItemIdentifier))")
         return ReminderDTO.from(reminder)
     }
 
@@ -192,7 +191,7 @@ final class ReminderService {
         if let notes { reminder.notes = notes }
 
         try self.manager.store.save(reminder, commit: true)
-        DZLog("Updated reminder: \(reminder.title ?? identifier)")
+        Logger.debug("Updated reminder: \(reminder.title ?? identifier)")
         return ReminderDTO.from(reminder)
     }
 
@@ -208,7 +207,7 @@ final class ReminderService {
 
         let title = reminder.title ?? identifier
         try self.manager.store.remove(reminder, commit: true)
-        DZLog("Deleted reminder: \(title)")
+        Logger.debug("Deleted reminder: \(title)")
     }
 
     // MARK: - Complete
@@ -223,7 +222,7 @@ final class ReminderService {
 
         reminder.isCompleted = true
         try self.manager.store.save(reminder, commit: true)
-        DZLog("Completed reminder: \(reminder.title ?? identifier)")
+        Logger.debug("Completed reminder: \(reminder.title ?? identifier)")
         return ReminderDTO.from(reminder)
     }
 

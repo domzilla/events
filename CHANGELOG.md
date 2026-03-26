@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Replaced DZFoundation logging with CLI-specific Logger that writes to stderr
+- Debug output no longer pollutes stdout JSON stream
+- Removed DZFoundation dependency entirely
+
 ### Added
 - CLI skeleton with JSON output envelope (`{"success": true/false, ...}`) and typed exit codes
 - `events status` — show authorization status and full command reference

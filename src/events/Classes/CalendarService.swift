@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 
@@ -41,11 +40,11 @@ final class CalendarService {
                 let reminderCalendars = self.manager.store.calendars(for: .reminder)
                 calendarDTOs += reminderCalendars.map { CalendarDTO.from($0, entityType: "reminder") }
             } catch {
-                DZLog("Reminders access not granted, skipping reminder calendars")
+                Logger.debug("Reminders access not granted, skipping reminder calendars")
             }
         }
 
-        DZLog("Found \(calendarDTOs.count) calendars")
+        Logger.debug("Found \(calendarDTOs.count) calendars")
         return calendarDTOs
     }
 }

@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 
@@ -21,7 +20,7 @@ enum CLI {
             JSONOutput.error(.unknownCommand(command: ""))
         }
 
-        DZLog("Command: \(args.joined(separator: " "))")
+        Logger.debug("Command: \(args.joined(separator: " "))")
 
         switch command {
         case "status":

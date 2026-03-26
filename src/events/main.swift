@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 

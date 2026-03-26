@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 
@@ -29,7 +28,7 @@ final class EventService {
         let predicate = self.manager.store.predicateForEvents(withStart: startDate, end: endDate, calendars: calendars)
         let events = self.manager.store.events(matching: predicate)
 
-        DZLog(
+        Logger.debug(
             "Found \(events.count) events between \(DateParsing.formatISO8601(startDate)) and \(DateParsing.formatISO8601(endDate))"
         )
         return events.map { EventDTO.from($0) }
@@ -65,7 +64,7 @@ final class EventService {
             return false
         }
 
-        DZLog("Search '\(query)' found \(filtered.count) matching events out of \(events.count) total")
+        Logger.debug("Search '\(query)' found \(filtered.count) matching events out of \(events.count) total")
         return filtered.map { EventDTO.from($0) }
     }
 
@@ -118,7 +117,7 @@ final class EventService {
         }
 
         try self.manager.store.save(event, span: .thisEvent, commit: true)
-        DZLog("Created event: \(title) (\(event.eventIdentifier ?? "no-id"))")
+        Logger.debug("Created event: \(title) (\(event.eventIdentifier ?? "no-id"))")
         return EventDTO.from(event)
     }
 
@@ -159,7 +158,7 @@ final class EventService {
         }
 
         try self.manager.store.save(event, span: span, commit: true)
-        DZLog("Updated event: \(event.title ?? identifier)")
+        Logger.debug("Updated event: \(event.title ?? identifier)")
         return EventDTO.from(event)
     }
 
@@ -172,7 +171,7 @@ final class EventService {
 
         let title = event.title ?? identifier
         try self.manager.store.remove(event, span: span, commit: true)
-        DZLog("Deleted event: \(title)")
+        Logger.debug("Deleted event: \(title)")
     }
 
     // MARK: - Private

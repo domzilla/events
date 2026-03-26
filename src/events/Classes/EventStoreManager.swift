@@ -6,7 +6,6 @@
 //  Copyright © 2026 Dominic Rodemer. All rights reserved.
 //
 
-import DZFoundation
 import EventKit
 import Foundation
 
@@ -38,7 +37,7 @@ final class EventStoreManager {
 
     func ensureEventsAccess() async throws {
         let status = self.eventsAuthorizationStatus
-        DZLog("Events authorization status: \(status.rawValue)")
+        Logger.debug("Events authorization status: \(status.rawValue)")
 
         switch status {
         case .fullAccess:
@@ -57,7 +56,7 @@ final class EventStoreManager {
 
     func ensureRemindersAccess() async throws {
         let status = self.remindersAuthorizationStatus
-        DZLog("Reminders authorization status: \(status.rawValue)")
+        Logger.debug("Reminders authorization status: \(status.rawValue)")
 
         switch status {
         case .fullAccess:
