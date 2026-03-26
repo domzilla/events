@@ -86,7 +86,16 @@ enum CLI {
         let status = StatusDTO(
             eventsAuthorization: manager.eventsAuthorizationStatus.displayString,
             remindersAuthorization: manager.remindersAuthorizationStatus.displayString,
-            availableCommands: self.commandList()
+            exitCodes: [
+                "success": 0,
+                "general_error": 1,
+                "authorization_denied": 2,
+                "not_found": 3,
+                "validation_error": 4,
+                "calendar_read_only": 5,
+            ],
+            dateFormat: "ISO 8601 (e.g. 2026-03-26T10:00:00Z or 2026-03-26)",
+            commands: self.commandList()
         )
         JSONOutput.success(status)
     }
@@ -501,78 +510,569 @@ enum CLI {
 
     // MARK: - Command List
 
+    // swiftlint:disable function_body_length
     private static func commandList() -> [CommandInfoDTO] {
-        [
+        let calendarFields: [String: String] = [
+            "identifier": "Unique calendar ID (use this for --calendar flags)",
+            "title": "Calendar display name",
+            "type": "Calendar type: local, caldav, exchange, subscription, birthday",
+            "entityType": "What this calendar holds: event or reminder",
+            "sourceName": "Account name (e.g. iCloud, Exchange)",
+            "color": "Hex color code (#RRGGBB)",
+            "isReadOnly": "Whether items can be added/edited/deleted",
+            "isSubscribed": "Whether this is a subscribed calendar",
+            "isImmutable": "Whether the calendar itself can be modified",
+        ]
+
+        let eventFields: [String: String] = [
+            "identifier": "Unique event ID (use this for get/update/delete)",
+            "title": "Event title",
+            "startDate": "Start date/time (ISO 8601)",
+            "endDate": "End date/time (ISO 8601)",
+            "isAllDay": "Whether this is an all-day event",
+            "calendar": "Object with identifier and title of the containing calendar",
+            "location": "Location string or null",
+            "notes": "Notes/description or null",
+            "url": "Associated URL or null",
+            "availability": "Scheduling availability: busy, free, tentative, unavailable, not_supported",
+            "status": "Event status: none, confirmed, tentative, canceled",
+            "isDetached": "Whether this is a modified occurrence of a recurring event",
+            "hasRecurrenceRules": "Whether this event repeats",
+            "hasAlarms": "Whether alarms are set",
+            "hasAttendees": "Whether there are attendees",
+            "alarms": "Array of alarms with relativeOffset (seconds) or absoluteDate",
+            "attendees": "Array of attendees with name, status, role, type, isCurrentUser",
+            "creationDate": "When the event was created (ISO 8601) or null",
+            "lastModifiedDate": "When the event was last modified (ISO 8601) or null",
+        ]
+
+        let reminderFields: [String: String] = [
+            "identifier": "Unique reminder ID (use this for get/update/delete/complete)",
+            "title": "Reminder title",
+            "calendar": "Object with identifier and title of the containing calendar",
+            "isCompleted": "Whether the reminder is marked as done",
+            "completionDate": "When it was completed (ISO 8601) or null",
+            "dueDate": "Due date (ISO 8601) or null",
+            "startDate": "Start date (ISO 8601) or null",
+            "priority": "Priority 0-9 (0=none, 1-4=high, 5=medium, 6-8=low, 9=low)",
+            "notes": "Notes/description or null",
+            "hasAlarms": "Whether alarms are set",
+            "hasRecurrenceRules": "Whether this reminder repeats",
+            "creationDate": "When the reminder was created (ISO 8601) or null",
+            "lastModifiedDate": "When the reminder was last modified (ISO 8601) or null",
+        ]
+
+        return [
+            // MARK: Status
+
             CommandInfoDTO(
                 command: "events status",
-                description: "Show authorization status and available commands"
+                description: "Show authorization status, exit codes, date format, and full command reference.",
+                parameters: nil,
+                output: OutputInfoDTO(
+                    description: "Authorization status and command documentation",
+                    fields: [
+                        "eventsAuthorization": "Authorization for calendar events: not_determined, denied, restricted, full_access, write_only",
+                        "remindersAuthorization": "Authorization for reminders: not_determined, denied, restricted, full_access, write_only",
+                        "exitCodes": "Map of error type to exit code number",
+                        "dateFormat": "Expected date format for all date parameters",
+                        "commands": "Array of all available commands with parameters and output schemas",
+                    ]
+                )
             ),
+
+            // MARK: Calendars
+
             CommandInfoDTO(
                 command: "events calendars list",
-                description: "List all calendars"
+                description: "List all calendars the user has access to, including both event and reminder calendars.",
+                parameters: nil,
+                output: OutputInfoDTO(
+                    description: "Array of calendar objects",
+                    fields: calendarFields
+                )
             ),
+
+            // MARK: Events - List
+
             CommandInfoDTO(
-                command: "events list --date <iso8601>",
-                description: "List events for a specific date"
+                command: "events list",
+                description: "List events in a date range. Use --date for a single day, or --from/--to for a range. At least one date parameter is required.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "--date",
+                        type: "ISO 8601 date",
+                        required: false,
+                        description: "List events for a single day (midnight to midnight). Cannot combine with --from/--to."
+                    ),
+                    ParameterInfoDTO(
+                        name: "--from",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "Start of date range. If --to is omitted, defaults to +30 days."
+                    ),
+                    ParameterInfoDTO(
+                        name: "--to",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "End of date range. If --from is omitted, defaults to now."
+                    ),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: false,
+                        description: "Filter to a specific calendar. Use identifier from 'calendars list'."
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Array of event objects sorted by start date",
+                    fields: eventFields
+                )
             ),
+
+            // MARK: Events - Search
+
             CommandInfoDTO(
-                command: "events list --from <iso8601> [--to <iso8601>] [--calendar <id>]",
-                description: "List events in a date range (--to defaults to +30 days)"
+                command: "events search",
+                description: "Search events by keyword. Matches against title, location, and notes fields (case-insensitive). Searches within a date range (defaults to now +30 days).",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "--query",
+                        type: "string",
+                        required: true,
+                        description: "Search keyword to match against title, location, and notes"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--from",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "Start of search range (defaults to now)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--to",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "End of search range (defaults to --from +30 days)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: false,
+                        description: "Filter to a specific calendar"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Array of matching event objects",
+                    fields: eventFields
+                )
             ),
-            CommandInfoDTO(
-                command: "events search --query <keyword> [--from <iso8601>] [--to <iso8601>] [--calendar <id>]",
-                description: "Search events by keyword across title, location, and notes"
-            ),
+
+            // MARK: Events - Get
+
             CommandInfoDTO(
                 command: "events get <identifier>",
-                description: "Get a single event by identifier"
+                description: "Get a single event by its identifier. Use the identifier from list or search results.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Event identifier (positional argument, not a flag)"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Single event object",
+                    fields: eventFields
+                )
             ),
+
+            // MARK: Events - Create
+
             CommandInfoDTO(
-                command: "events create --title <t> --start <iso8601> --end <iso8601> --calendar <id> [--all-day] [--location <s>] [--notes <s>] [--url <s>] [--alarm <minutes>] [--recurrence daily|weekly|monthly|yearly] [--recurrence-interval <n>] [--recurrence-end <iso8601>] [--recurrence-count <n>]",
-                description: "Create a new event"
+                command: "events create",
+                description: "Create a new calendar event. Returns the created event with its assigned identifier.",
+                parameters: [
+                    ParameterInfoDTO(name: "--title", type: "string", required: true, description: "Event title"),
+                    ParameterInfoDTO(
+                        name: "--start",
+                        type: "ISO 8601 datetime",
+                        required: true,
+                        description: "Event start date/time"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--end",
+                        type: "ISO 8601 datetime",
+                        required: true,
+                        description: "Event end date/time (must be after start)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: true,
+                        description: "Target calendar (must not be read-only)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--all-day",
+                        type: "flag",
+                        required: false,
+                        description: "Mark as all-day event (no value needed)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--location",
+                        type: "string",
+                        required: false,
+                        description: "Event location"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--notes",
+                        type: "string",
+                        required: false,
+                        description: "Event notes/description"
+                    ),
+                    ParameterInfoDTO(name: "--url", type: "URL string", required: false, description: "Associated URL"),
+                    ParameterInfoDTO(
+                        name: "--alarm",
+                        type: "integer (minutes)",
+                        required: false,
+                        description: "Add alarm N minutes before event start"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--recurrence",
+                        type: "daily|weekly|monthly|yearly",
+                        required: false,
+                        description: "Make this a recurring event"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--recurrence-interval",
+                        type: "integer",
+                        required: false,
+                        description: "Repeat every N periods (default 1). E.g. --recurrence weekly --recurrence-interval 2 = every 2 weeks."
+                    ),
+                    ParameterInfoDTO(
+                        name: "--recurrence-end",
+                        type: "ISO 8601 date",
+                        required: false,
+                        description: "Stop recurring after this date"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--recurrence-count",
+                        type: "integer",
+                        required: false,
+                        description: "Stop recurring after N occurrences"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "The created event object with its new identifier",
+                    fields: eventFields
+                )
             ),
+
+            // MARK: Events - Update
+
             CommandInfoDTO(
-                command: "events update <identifier> [--title <t>] [--start <iso8601>] [--end <iso8601>] [--calendar <id>] [--location <s>] [--notes <s>] [--all-day <bool>] [--alarm <minutes>] [--span this|future]",
-                description: "Update an existing event"
+                command: "events update <identifier>",
+                description: "Update an existing event. Only the fields you provide will be changed; all other fields remain unchanged. For recurring events, use --span to control scope.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Event identifier (positional argument)"
+                    ),
+                    ParameterInfoDTO(name: "--title", type: "string", required: false, description: "New title"),
+                    ParameterInfoDTO(
+                        name: "--start",
+                        type: "ISO 8601 datetime",
+                        required: false,
+                        description: "New start date/time"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--end",
+                        type: "ISO 8601 datetime",
+                        required: false,
+                        description: "New end date/time"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: false,
+                        description: "Move event to a different calendar"
+                    ),
+                    ParameterInfoDTO(name: "--location", type: "string", required: false, description: "New location"),
+                    ParameterInfoDTO(name: "--notes", type: "string", required: false, description: "New notes"),
+                    ParameterInfoDTO(
+                        name: "--all-day",
+                        type: "true|false",
+                        required: false,
+                        description: "Change all-day status"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--alarm",
+                        type: "integer (minutes)",
+                        required: false,
+                        description: "Replace all alarms with one N minutes before start"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--span",
+                        type: "this|future",
+                        required: false,
+                        description: "For recurring events: 'this' = only this occurrence (default), 'future' = this and all future occurrences"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "The updated event object",
+                    fields: eventFields
+                )
             ),
+
+            // MARK: Events - Delete
+
             CommandInfoDTO(
-                command: "events delete <identifier> [--span this|future]",
-                description: "Delete an event"
+                command: "events delete <identifier>",
+                description: "Delete an event. For recurring events, use --span to control whether to delete just this occurrence or all future occurrences.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Event identifier (positional argument)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--span",
+                        type: "this|future",
+                        required: false,
+                        description: "For recurring events: 'this' = only this occurrence (default), 'future' = this and all future occurrences"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Confirmation object",
+                    fields: [
+                        "deleted": "Always true on success",
+                        "identifier": "The identifier of the deleted event",
+                    ]
+                )
             ),
+
+            // MARK: Reminders - List
+
             CommandInfoDTO(
-                command: "events reminders list [--calendar <id>] [--completed | --incomplete] [--due-before <iso8601>] [--due-after <iso8601>]",
-                description: "List reminders with optional filters"
+                command: "events reminders list",
+                description: "List reminders with optional filters. Without filters, returns all reminders. Filters can be combined.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: false,
+                        description: "Filter to a specific reminder calendar"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--completed",
+                        type: "flag",
+                        required: false,
+                        description: "Show only completed reminders"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--incomplete",
+                        type: "flag",
+                        required: false,
+                        description: "Show only incomplete reminders"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--overdue",
+                        type: "flag",
+                        required: false,
+                        description: "Show only incomplete reminders past their due date"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--due-before",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "Show reminders due before this date"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--due-after",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "Show reminders due after this date"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Array of reminder objects",
+                    fields: reminderFields
+                )
             ),
+
+            // MARK: Reminders - Search
+
             CommandInfoDTO(
-                command: "events reminders list --overdue",
-                description: "List overdue incomplete reminders"
+                command: "events reminders search",
+                description: "Search reminders by keyword. Matches against title, location, and notes fields (case-insensitive). Searches all reminders regardless of completion status.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "--query",
+                        type: "string",
+                        required: true,
+                        description: "Search keyword to match against title, location, and notes"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: false,
+                        description: "Filter to a specific reminder calendar"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Array of matching reminder objects",
+                    fields: reminderFields
+                )
             ),
-            CommandInfoDTO(
-                command: "events reminders search --query <keyword> [--calendar <id>]",
-                description: "Search reminders by keyword"
-            ),
+
+            // MARK: Reminders - Get
+
             CommandInfoDTO(
                 command: "events reminders get <identifier>",
-                description: "Get a single reminder by identifier"
+                description: "Get a single reminder by its identifier.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Reminder identifier (positional argument)"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Single reminder object",
+                    fields: reminderFields
+                )
             ),
+
+            // MARK: Reminders - Create
+
             CommandInfoDTO(
-                command: "events reminders create --title <t> --calendar <id> [--due <iso8601>] [--priority 0-9] [--notes <s>] [--alarm <minutes>]",
-                description: "Create a new reminder"
+                command: "events reminders create",
+                description: "Create a new reminder. Returns the created reminder with its assigned identifier.",
+                parameters: [
+                    ParameterInfoDTO(name: "--title", type: "string", required: true, description: "Reminder title"),
+                    ParameterInfoDTO(
+                        name: "--calendar",
+                        type: "calendar identifier",
+                        required: true,
+                        description: "Target reminder calendar (must not be read-only)"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--due",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "Due date"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--priority",
+                        type: "integer 0-9",
+                        required: false,
+                        description: "Priority: 0=none, 1-4=high, 5=medium, 6-9=low"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--notes",
+                        type: "string",
+                        required: false,
+                        description: "Reminder notes/description"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--alarm",
+                        type: "integer (minutes)",
+                        required: false,
+                        description: "Add alarm N minutes before due date"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "The created reminder object with its new identifier",
+                    fields: reminderFields
+                )
             ),
+
+            // MARK: Reminders - Update
+
             CommandInfoDTO(
-                command: "events reminders update <identifier> [--title <t>] [--due <iso8601>] [--priority 0-9] [--notes <s>] [--alarm <minutes>]",
-                description: "Update an existing reminder"
+                command: "events reminders update <identifier>",
+                description: "Update an existing reminder. Only the fields you provide will be changed; all other fields remain unchanged.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Reminder identifier (positional argument)"
+                    ),
+                    ParameterInfoDTO(name: "--title", type: "string", required: false, description: "New title"),
+                    ParameterInfoDTO(
+                        name: "--due",
+                        type: "ISO 8601 date/datetime",
+                        required: false,
+                        description: "New due date"
+                    ),
+                    ParameterInfoDTO(
+                        name: "--priority",
+                        type: "integer 0-9",
+                        required: false,
+                        description: "New priority"
+                    ),
+                    ParameterInfoDTO(name: "--notes", type: "string", required: false, description: "New notes"),
+                    ParameterInfoDTO(
+                        name: "--alarm",
+                        type: "integer (minutes)",
+                        required: false,
+                        description: "Replace all alarms with one N minutes before due date"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "The updated reminder object",
+                    fields: reminderFields
+                )
             ),
+
+            // MARK: Reminders - Delete
+
             CommandInfoDTO(
                 command: "events reminders delete <identifier>",
-                description: "Delete a reminder"
+                description: "Delete a reminder permanently.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Reminder identifier (positional argument)"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "Confirmation object",
+                    fields: [
+                        "deleted": "Always true on success",
+                        "identifier": "The identifier of the deleted reminder",
+                    ]
+                )
             ),
+
+            // MARK: Reminders - Complete
+
             CommandInfoDTO(
                 command: "events reminders complete <identifier>",
-                description: "Mark a reminder as completed"
+                description: "Mark a reminder as completed. Sets isCompleted to true and records the completion date.",
+                parameters: [
+                    ParameterInfoDTO(
+                        name: "<identifier>",
+                        type: "string",
+                        required: true,
+                        description: "Reminder identifier (positional argument)"
+                    ),
+                ],
+                output: OutputInfoDTO(
+                    description: "The updated reminder object with isCompleted=true",
+                    fields: reminderFields
+                )
             ),
         ]
     }
+
+    // swiftlint:enable function_body_length
 
     // MARK: - Argument Parsing Helpers
 

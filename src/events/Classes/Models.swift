@@ -21,12 +21,28 @@ struct DeletedDTO: Codable {
 struct StatusDTO: Codable {
     let eventsAuthorization: String
     let remindersAuthorization: String
-    let availableCommands: [CommandInfoDTO]
+    let exitCodes: [String: Int]
+    let dateFormat: String
+    let commands: [CommandInfoDTO]
 }
 
 struct CommandInfoDTO: Codable {
     let command: String
     let description: String
+    let parameters: [ParameterInfoDTO]?
+    let output: OutputInfoDTO
+}
+
+struct ParameterInfoDTO: Codable {
+    let name: String
+    let type: String
+    let required: Bool
+    let description: String
+}
+
+struct OutputInfoDTO: Codable {
+    let description: String
+    let fields: [String: String]?
 }
 
 // MARK: - Calendar
