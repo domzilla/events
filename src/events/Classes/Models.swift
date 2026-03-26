@@ -16,15 +16,17 @@ struct DeletedDTO: Codable {
     let identifier: String
 }
 
-// MARK: - Status
-
-struct StatusDTO: Codable {
-    let eventsAuthorization: String
-    let remindersAuthorization: String
-    let exitCodes: [String: Int]
-    let dateFormat: String
-    let commands: [CommandInfoDTO]
+struct HelpDTO: Codable {
+    let usage: String
+    let commands: [HelpCommandDTO]
 }
+
+struct HelpCommandDTO: Codable {
+    let command: String
+    let description: String
+}
+
+// MARK: - Help
 
 struct CommandInfoDTO: Codable {
     let command: String

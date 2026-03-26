@@ -105,7 +105,7 @@ SwiftFormat configuration is defined in `.swiftformat` at the project root. This
 ---
 
 ## Help Output / Status Command (MANDATORY)
-The `events status` command is the **single source of truth** for AI agents. It documents every command, every parameter, and every output field.
+The help system is the **single source of truth** for AI agents. `events -h` lists all commands, `<command> -h` shows full parameter and output documentation.
 
 **Rules:**
 - Every command and flag **must** be documented in the `commandList()` method in `CLI.swift`

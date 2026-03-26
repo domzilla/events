@@ -20,6 +20,11 @@ enum CLI {
             JSONOutput.error(.unknownCommand(command: ""))
         }
 
+        // Top-level help: events -h / events --help / events help
+        if command == "help" || command == "-h" || command == "--help" {
+            self.handleTopLevelHelp()
+        }
+
         Logger.debug("Command: \(args.joined(separator: " "))")
 
         switch command {
@@ -30,32 +35,45 @@ enum CLI {
             guard args.count > 1, args[1] == "list" else {
                 JSONOutput.error(.unknownCommand(command: "calendars \(args.dropFirst().first ?? "")"))
             }
+            if self.wantsHelp(args) { self.handleCommandHelp("calendars list") }
             await self.handleCalendarsList()
 
         case "list":
+            if self.wantsHelp(args) { self.handleCommandHelp("list") }
             await self.handleEventsList(args: args)
 
         case "search":
+            if self.wantsHelp(args) { self.handleCommandHelp("search") }
             await self.handleEventsSearch(args: args)
 
         case "get":
+            if self.wantsHelp(args) { self.handleCommandHelp("get") }
             await self.handleEventsGet(args: args)
 
         case "create":
+            if self.wantsHelp(args) { self.handleCommandHelp("create") }
             await self.handleEventsCreate(args: args)
 
         case "update":
+            if self.wantsHelp(args) { self.handleCommandHelp("update") }
             await self.handleEventsUpdate(args: args)
 
         case "delete":
+            if self.wantsHelp(args) { self.handleCommandHelp("delete") }
             await self.handleEventsDelete(args: args)
 
         case "reminders":
             guard args.count > 1 else {
                 JSONOutput.error(.unknownCommand(command: "reminders"))
             }
+            // events reminders -h
+            if args[1] == "-h" || args[1] == "--help" || args[1] == "help" {
+                self.handleRemindersHelp()
+            }
             let subArgs = Array(args.dropFirst())
-            switch args[1] {
+            let subCommand = args[1]
+            if self.wantsHelp(subArgs) { self.handleCommandHelp("reminders \(subCommand)") }
+            switch subCommand {
             case "list":
                 await self.handleRemindersList(args: subArgs)
             case "search":
@@ -71,7 +89,7 @@ enum CLI {
             case "complete":
                 await self.handleRemindersComplete(args: subArgs)
             default:
-                JSONOutput.error(.unknownCommand(command: "reminders \(args[1])"))
+                JSONOutput.error(.unknownCommand(command: "reminders \(subCommand)"))
             }
 
         default:
@@ -79,24 +97,81 @@ enum CLI {
         }
     }
 
+    // MARK: - Help
+
+    private static func wantsHelp(_ args: [String]) -> Bool {
+        args.contains("-h") || args.contains("--help")
+    }
+
+    private static func handleTopLevelHelp() -> Never {
+        let help = HelpDTO(
+            usage: "Use '<command> -h' for detailed help on a specific command.",
+            commands: [
+                HelpCommandDTO(
+                    command: "events status",
+                    description: "Show calendar and reminders authorization status"
+                ),
+                HelpCommandDTO(command: "events calendars list", description: "List all calendars"),
+                HelpCommandDTO(command: "events list", description: "List events by date or date range"),
+                HelpCommandDTO(command: "events search", description: "Search events by keyword"),
+                HelpCommandDTO(command: "events get <id>", description: "Get a single event by identifier"),
+                HelpCommandDTO(command: "events create", description: "Create a new event"),
+                HelpCommandDTO(command: "events update <id>", description: "Update an existing event"),
+                HelpCommandDTO(command: "events delete <id>", description: "Delete an event"),
+                HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
+                HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
+                HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
+                HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
+                HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
+                HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
+                HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
+            ]
+        )
+        JSONOutput.success(help)
+    }
+
+    private static func handleRemindersHelp() -> Never {
+        let help = HelpDTO(
+            usage: "Use '<command> -h' for detailed help on a specific command.",
+            commands: [
+                HelpCommandDTO(command: "events reminders list", description: "List reminders with filters"),
+                HelpCommandDTO(command: "events reminders search", description: "Search reminders by keyword"),
+                HelpCommandDTO(command: "events reminders get <id>", description: "Get a single reminder"),
+                HelpCommandDTO(command: "events reminders create", description: "Create a new reminder"),
+                HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
+                HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
+                HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
+            ]
+        )
+        JSONOutput.success(help)
+    }
+
+    private static func handleCommandHelp(_ commandName: String) -> Never {
+        let allCommands = self.commandList()
+        if let cmd = allCommands.first(where: { self.matchesCommand($0.command, name: commandName) }) {
+            JSONOutput.success(cmd)
+        }
+        JSONOutput.error(.unknownCommand(command: commandName))
+    }
+
+    private static func matchesCommand(_ command: String, name: String) -> Bool {
+        // Match "events list" against "list", "events reminders create" against "reminders create", etc.
+        let normalized = command
+            .replacingOccurrences(of: "events ", with: "")
+            .components(separatedBy: " ")
+            .filter { !$0.hasPrefix("<") && !$0.hasPrefix("[") }
+            .joined(separator: " ")
+        return normalized == name
+    }
+
     // MARK: - Status
 
     private static func handleStatus() async {
         let manager = EventStoreManager.shared
-        let status = StatusDTO(
-            eventsAuthorization: manager.eventsAuthorizationStatus.displayString,
-            remindersAuthorization: manager.remindersAuthorizationStatus.displayString,
-            exitCodes: [
-                "success": 0,
-                "general_error": 1,
-                "authorization_denied": 2,
-                "not_found": 3,
-                "validation_error": 4,
-                "calendar_read_only": 5,
-            ],
-            dateFormat: "ISO 8601 (e.g. 2026-03-26T10:00:00Z or 2026-03-26)",
-            commands: self.commandList()
-        )
+        let status: [String: String] = [
+            "eventsAuthorization": manager.eventsAuthorizationStatus.displayString,
+            "remindersAuthorization": manager.remindersAuthorizationStatus.displayString,
+        ]
         JSONOutput.success(status)
     }
 
@@ -567,16 +642,13 @@ enum CLI {
 
             CommandInfoDTO(
                 command: "events status",
-                description: "Show authorization status, exit codes, date format, and full command reference.",
+                description: "Show authorization status for calendar events and reminders.",
                 parameters: nil,
                 output: OutputInfoDTO(
-                    description: "Authorization status and command documentation",
+                    description: "Authorization status object",
                     fields: [
                         "eventsAuthorization": "Authorization for calendar events: not_determined, denied, restricted, full_access, write_only",
                         "remindersAuthorization": "Authorization for reminders: not_determined, denied, restricted, full_access, write_only",
-                        "exitCodes": "Map of error type to exit code number",
-                        "dateFormat": "Expected date format for all date parameters",
-                        "commands": "Array of all available commands with parameters and output schemas",
                     ]
                 )
             ),
