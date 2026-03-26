@@ -1,0 +1,15 @@
+---
+version_source: plist
+plist_path: src/events/Resources/Info.plist
+tag_prefix: v
+release_branch: main
+git_remotes:
+- origin
+- github.com
+publishers:
+- homebrew-tap
+post_publish_commands:
+- echo "Release {{version}} complete"
+homebrew-tap:
+  formula: events
+  tap_repo: domzilla/homebrew-tap

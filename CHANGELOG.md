@@ -8,6 +8,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Homebrew tap publishing via GitHub Actions (xcodebuild-based bottle builds for arm64 and x86_64)
+- `.publish` configuration for the `publish` CLI tool
+- MIT license
+
+### Added
 - `--alarm <minutes>` flag on `events update` and `events reminders update` commands
 - `isSubscribed` and `isImmutable` fields to calendar JSON output
 - Recurrence support for `events create`: `--recurrence daily|weekly|monthly|yearly`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`
