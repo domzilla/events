@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F2C24F502F74F1810058C06A /* DZFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = F2C24F4F2F74F1810058C06A /* DZFoundation */; };
 		F2C24F532F74F19D0058C06A /* EventKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F2C24F522F74F19D0058C06A /* EventKit.framework */; };
 /* End PBXBuildFile section */
 
@@ -42,7 +41,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F2C24F532F74F19D0058C06A /* EventKit.framework in Frameworks */,
-				F2C24F502F74F1810058C06A /* DZFoundation in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,7 +92,6 @@
 			);
 			name = events;
 			packageProductDependencies = (
-				F2C24F4F2F74F1810058C06A /* DZFoundation */,
 			);
 			productName = events;
 			productReference = F2C24F362F74EDA30058C06A /* events */;
@@ -125,7 +122,6 @@
 			mainGroup = F2C24F2D2F74EDA30058C06A;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				F2C24F4E2F74F1810058C06A /* XCLocalSwiftPackageReference "../../../../Libraries/DZFoundation" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = F2C24F372F74EDA30058C06A /* Products */;
@@ -318,20 +314,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCLocalSwiftPackageReference section */
-		F2C24F4E2F74F1810058C06A /* XCLocalSwiftPackageReference "../../../../Libraries/DZFoundation" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../../../Libraries/DZFoundation;
-		};
-/* End XCLocalSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		F2C24F4F2F74F1810058C06A /* DZFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DZFoundation;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F2C24F2E2F74EDA30058C06A /* Project object */;
 }
