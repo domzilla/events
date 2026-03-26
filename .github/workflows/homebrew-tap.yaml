@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
@@ -60,7 +60,7 @@ jobs:
           shasum -a 256 "events-${VERSION}.${BOTTLE_TAG}.bottle.tar.gz" > "events-${VERSION}.${BOTTLE_TAG}.bottle.tar.gz.sha256"
 
       - name: Upload bottle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: bottle-${{ matrix.bottle_tag }}
           path: |
@@ -76,7 +76,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: bottles
           merge-multiple: true
@@ -122,7 +122,7 @@ jobs:
 
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: bottles
           merge-multiple: true
@@ -145,7 +145,7 @@ jobs:
           echo "x86_64_sha=$(cat events-${{ steps.version.outputs.version }}.tahoe.bottle.tar.gz.sha256 | cut -d' ' -f1)" >> $GITHUB_OUTPUT
 
       - name: Checkout homebrew-tap
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: domzilla/homebrew-tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
