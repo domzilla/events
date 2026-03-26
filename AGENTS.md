@@ -1,7 +1,7 @@
-# {PROJECT_NAME} - AGENTS.md
+# events - AGENTS.md
 
 ## Project Overview
-{Brief description of what this app does}
+A Swift CLI tool that wraps Apple's EventKit framework, enabling AI agents to interact with the user's Calendar and Reminders via structured JSON output. All commands output JSON to stdout with typed exit codes.
 
 ## Tech Stack
 - **Language**: Swift 6
@@ -28,23 +28,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Swift 6 migration (full): `~/Agents/Guides/swift6-migration-full-guide.md`
 
 ## Logging (MANDATORY)
-This project uses **DZFoundation** (`~/GIT/Libraries/DZFoundation`) for logging.
+This project uses a built-in `Logger` enum (`Classes/Logger.swift`) that writes to **stderr**.
 
 **All debug logging must use:**
-- `DZLog("message")` — General debug output
-- `DZErrorLog(error)` — Conditional error logging (only prints if error is non-nil)
+- `Logger.debug("message")` — General debug output (writes to stderr)
+- `Logger.error(error)` — Conditional error logging (only logs if error is non-nil)
 
 ```swift
-import DZFoundation
-
-DZLog("Starting fetch")       // 🔶 fetchData() 42: Starting fetch
-DZErrorLog(error)             // ❌ MyFile.swift:45 fetchData() ERROR: Network unavailable
+Logger.debug("Starting fetch")   // [DEBUG] fetchData():42 Starting fetch
+Logger.error(error)               // [ERROR] fetchData():45 Network unavailable
 ```
 
 **Do NOT use:**
-- `print()` for debug output
+- `print()` for debug output — stdout is reserved for JSON output
 - `os.Logger` instances
 - `NSLog`
+- `DZFoundation` / `DZLog`
 
 Both functions are no-ops in release builds.
 
@@ -79,13 +78,13 @@ This project uses **File System Synchronized Groups** (internally `PBXFileSystem
 ## Build & Format Commands
 ```bash
 # Build
-xcodebuild -scheme "{SCHEME_NAME}" -destination "platform=iOS Simulator,name=iPhone 16" build
+xcodebuild -scheme "events" -destination "platform=macOS" build
 
 # Run tests
-xcodebuild -scheme "{SCHEME_NAME}" -destination "platform=iOS Simulator,name=iPhone 16" test
+xcodebuild -scheme "events" -destination "platform=macOS" test
 
 # Clean
-xcodebuild -scheme "{SCHEME_NAME}" clean
+xcodebuild -scheme "events" clean
 ```
 
 ## Code Formatting (MANDATORY)
@@ -106,9 +105,8 @@ SwiftFormat configuration is defined in `.swiftformat` at the project root. This
 ---
 
 ## Notes
-- The style guide emphasizes native SwiftUI patterns over MVVM boilerplate
-- Prefer `@Observable` (iOS 17+) over `ObservableObject`
-- Use `async/await` and `.task` modifier for async work
-- Avoid Combine unless specifically needed
-- Use `DZLog`/`DZErrorLog` for all debug logging — never `print()`
+- This is a CLI tool — no SwiftUI, no UI framework dependencies
+- Use `async/await` for async work (EventKit callback APIs wrapped with `withCheckedContinuation`)
+- `@MainActor` on all service classes to satisfy Swift 6 Sendable requirements with non-Sendable EKEventStore
+- Use `Logger.debug`/`Logger.error` for debug logging — never `print()` (stdout is JSON output)
 - Always run `swiftformat .` after successful builds before committing
