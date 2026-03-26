@@ -88,7 +88,10 @@ final class EventService {
         location: String? = nil,
         notes: String? = nil,
         url: String? = nil,
-        alarmMinutes: Int? = nil
+        alarmMinutes: Int? = nil,
+        recurrence: EKRecurrenceFrequency? = nil,
+        recurrenceInterval: Int = 1,
+        recurrenceEnd: EKRecurrenceEnd? = nil
     ) throws
         -> EventDTO
     {
@@ -114,6 +117,15 @@ final class EventService {
         if let minutes = alarmMinutes {
             let alarm = EKAlarm(relativeOffset: TimeInterval(-minutes * 60))
             event.addAlarm(alarm)
+        }
+
+        if let recurrence {
+            let rule = EKRecurrenceRule(
+                recurrenceWith: recurrence,
+                interval: recurrenceInterval,
+                end: recurrenceEnd
+            )
+            event.addRecurrenceRule(rule)
         }
 
         try self.manager.store.save(event, span: .thisEvent, commit: true)

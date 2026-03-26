@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - `--alarm <minutes>` flag on `events update` and `events reminders update` commands
 - `isSubscribed` and `isImmutable` fields to calendar JSON output
+- Recurrence support for `events create`: `--recurrence daily|weekly|monthly|yearly`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`
 
 ### Changed
 - Replaced DZFoundation logging with CLI-specific Logger that writes to stderr

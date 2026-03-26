@@ -209,6 +209,20 @@ enum CLI {
             let url = self.flagValue(for: "url", in: args)
             let alarmMinutes = self.flagValue(for: "alarm", in: args).flatMap { Int($0) }
 
+            let recurrence = self.flagValue(for: "recurrence", in: args)
+                .flatMap { self.parseRecurrenceFrequency($0) }
+            let recurrenceInterval = self.flagValue(for: "recurrence-interval", in: args)
+                .flatMap { Int($0) } ?? 1
+            let recurrenceEnd: EKRecurrenceEnd? = try {
+                if let endDateStr = self.flagValue(for: "recurrence-end", in: args) {
+                    return try EKRecurrenceEnd(end: DateParsing.parseISO8601(endDateStr))
+                }
+                if let count = self.flagValue(for: "recurrence-count", in: args).flatMap({ Int($0) }) {
+                    return EKRecurrenceEnd(occurrenceCount: count)
+                }
+                return nil
+            }()
+
             let event = try service.createEvent(
                 title: title,
                 startDate: startDate,
@@ -218,7 +232,10 @@ enum CLI {
                 location: location,
                 notes: notes,
                 url: url,
-                alarmMinutes: alarmMinutes
+                alarmMinutes: alarmMinutes,
+                recurrence: recurrence,
+                recurrenceInterval: recurrenceInterval,
+                recurrenceEnd: recurrenceEnd
             )
             JSONOutput.success(event)
         } catch let error as EventsError {
@@ -511,7 +528,7 @@ enum CLI {
                 description: "Get a single event by identifier"
             ),
             CommandInfoDTO(
-                command: "events create --title <t> --start <iso8601> --end <iso8601> --calendar <id> [--all-day] [--location <s>] [--notes <s>] [--url <s>] [--alarm <minutes>]",
+                command: "events create --title <t> --start <iso8601> --end <iso8601> --calendar <id> [--all-day] [--location <s>] [--notes <s>] [--url <s>] [--alarm <minutes>] [--recurrence daily|weekly|monthly|yearly] [--recurrence-interval <n>] [--recurrence-end <iso8601>] [--recurrence-count <n>]",
                 description: "Create a new event"
             ),
             CommandInfoDTO(
@@ -583,5 +600,15 @@ enum CLI {
         let value = args[index]
         guard !value.hasPrefix("--") else { return nil }
         return value
+    }
+
+    static func parseRecurrenceFrequency(_ value: String) -> EKRecurrenceFrequency? {
+        switch value.lowercased() {
+        case "daily": .daily
+        case "weekly": .weekly
+        case "monthly": .monthly
+        case "yearly": .yearly
+        default: nil
+        }
     }
 }
