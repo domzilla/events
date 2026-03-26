@@ -104,6 +104,16 @@ SwiftFormat configuration is defined in `.swiftformat` at the project root. This
 
 ---
 
+## Help Output / Status Command (MANDATORY)
+The `events status` command is the **single source of truth** for AI agents. It documents every command, every parameter, and every output field.
+
+**Rules:**
+- Every command and flag **must** be documented in the `commandList()` method in `CLI.swift`
+- Every output field **must** be documented in the output schema of the corresponding command
+- A command or flag that is not in the status output **does not exist** for the agent
+- When adding/changing/removing commands, flags, or output fields: **always update `commandList()` in the same commit**
+- The status output must stay in sync with the actual implementation at all times
+
 ## Notes
 - This is a CLI tool — no SwiftUI, no UI framework dependencies
 - Use `async/await` for async work (EventKit callback APIs wrapped with `withCheckedContinuation`)
