@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `-h` and `--help` flags supported on all commands and subcommands
 - Help hint (`Use 'events -h' for help.`) appended to all error output on stderr
 - `--version` / `-v` flag to display version and build number (read from embedded Info.plist)
+- Date parsing now accepts local datetimes without timezone (e.g. `2026-03-27T09:00:00`), interpreted as local time
 
 ### Changed
 - Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON

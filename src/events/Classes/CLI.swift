@@ -691,19 +691,19 @@ enum CLI {
                 parameters: [
                     ParameterInfoDTO(
                         name: "--date",
-                        type: "ISO 8601 date",
+                        type: "YYYY-MM-DD",
                         required: false,
                         description: "List events for a single day (midnight to midnight). Cannot combine with --from/--to."
                     ),
                     ParameterInfoDTO(
                         name: "--from",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "Start of date range. If --to is omitted, defaults to +30 days."
                     ),
                     ParameterInfoDTO(
                         name: "--to",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "End of date range. If --from is omitted, defaults to now."
                     ),
@@ -734,13 +734,13 @@ enum CLI {
                     ),
                     ParameterInfoDTO(
                         name: "--from",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "Start of search range (defaults to now)"
                     ),
                     ParameterInfoDTO(
                         name: "--to",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "End of search range (defaults to --from +30 days)"
                     ),
@@ -785,13 +785,13 @@ enum CLI {
                     ParameterInfoDTO(name: "--title", type: "string", required: true, description: "Event title"),
                     ParameterInfoDTO(
                         name: "--start",
-                        type: "ISO 8601 datetime",
+                        type: "YYYY-MM-DDTHH:mm:ss",
                         required: true,
                         description: "Event start date/time"
                     ),
                     ParameterInfoDTO(
                         name: "--end",
-                        type: "ISO 8601 datetime",
+                        type: "YYYY-MM-DDTHH:mm:ss",
                         required: true,
                         description: "Event end date/time (must be after start)"
                     ),
@@ -840,7 +840,7 @@ enum CLI {
                     ),
                     ParameterInfoDTO(
                         name: "--recurrence-end",
-                        type: "ISO 8601 date",
+                        type: "YYYY-MM-DD",
                         required: false,
                         description: "Stop recurring after this date"
                     ),
@@ -872,13 +872,13 @@ enum CLI {
                     ParameterInfoDTO(name: "--title", type: "string", required: false, description: "New title"),
                     ParameterInfoDTO(
                         name: "--start",
-                        type: "ISO 8601 datetime",
+                        type: "YYYY-MM-DDTHH:mm:ss",
                         required: false,
                         description: "New start date/time"
                     ),
                     ParameterInfoDTO(
                         name: "--end",
-                        type: "ISO 8601 datetime",
+                        type: "YYYY-MM-DDTHH:mm:ss",
                         required: false,
                         description: "New end date/time"
                     ),
@@ -975,13 +975,13 @@ enum CLI {
                     ),
                     ParameterInfoDTO(
                         name: "--due-before",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "Show reminders due before this date"
                     ),
                     ParameterInfoDTO(
                         name: "--due-after",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "Show reminders due after this date"
                     ),
@@ -1051,7 +1051,7 @@ enum CLI {
                     ),
                     ParameterInfoDTO(
                         name: "--due",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "Due date"
                     ),
@@ -1095,7 +1095,7 @@ enum CLI {
                     ParameterInfoDTO(name: "--title", type: "string", required: false, description: "New title"),
                     ParameterInfoDTO(
                         name: "--due",
-                        type: "ISO 8601 date/datetime",
+                        type: "YYYY-MM-DD[THH:mm:ss]",
                         required: false,
                         description: "New due date"
                     ),

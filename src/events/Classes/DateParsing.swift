@@ -23,6 +23,14 @@ enum DateParsing {
         return formatter
     }()
 
+    private static let localDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        return formatter
+    }()
+
     private static let dateOnly: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
@@ -44,6 +52,9 @@ enum DateParsing {
             return date
         }
         if let date = self.iso8601WithFractional.date(from: string) {
+            return date
+        }
+        if let date = self.localDateTime.date(from: string) {
             return date
         }
         if let date = self.dateOnly.date(from: string) {
