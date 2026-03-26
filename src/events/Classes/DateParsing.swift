@@ -39,9 +39,10 @@ enum DateParsing {
         return formatter
     }()
 
-    private static let outputFormatter: ISO8601DateFormatter = {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime]
+    private static let outputFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssxxx"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }()
 
@@ -63,8 +64,10 @@ enum DateParsing {
         throw EventsError.invalidArgument(name: "--date", value: string)
     }
 
-    static func formatISO8601(_ date: Date) -> String {
-        self.outputFormatter.string(from: date)
+    static func formatISO8601(_ date: Date, timeZone: TimeZone? = nil) -> String {
+        let formatter = self.outputFormatter
+        formatter.timeZone = timeZone ?? .current
+        return formatter.string(from: date)
     }
 
     // MARK: - Date Components

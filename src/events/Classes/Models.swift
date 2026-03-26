@@ -89,6 +89,7 @@ struct EventDTO: Codable {
     let startDate: String
     let endDate: String
     let isAllDay: Bool
+    let timeZone: String?
     let calendar: CalendarRefDTO
     let location: String?
     let notes: String?
@@ -105,12 +106,14 @@ struct EventDTO: Codable {
     let lastModifiedDate: String?
 
     static func from(_ event: EKEvent) -> EventDTO {
-        EventDTO(
+        let tz = event.timeZone
+        return EventDTO(
             identifier: event.eventIdentifier,
             title: event.title ?? "",
-            startDate: DateParsing.formatISO8601(event.startDate),
-            endDate: DateParsing.formatISO8601(event.endDate),
+            startDate: DateParsing.formatISO8601(event.startDate, timeZone: tz),
+            endDate: DateParsing.formatISO8601(event.endDate, timeZone: tz),
             isAllDay: event.isAllDay,
+            timeZone: tz?.identifier,
             calendar: CalendarRefDTO.from(event.calendar),
             location: event.location,
             notes: event.notes,
@@ -123,8 +126,8 @@ struct EventDTO: Codable {
             hasAttendees: event.hasAttendees,
             alarms: event.alarms?.map { AlarmDTO.from($0) },
             attendees: event.attendees?.map { AttendeeDTO.from($0) },
-            creationDate: event.creationDate.map { DateParsing.formatISO8601($0) },
-            lastModifiedDate: event.lastModifiedDate.map { DateParsing.formatISO8601($0) }
+            creationDate: event.creationDate.map { DateParsing.formatISO8601($0, timeZone: tz) },
+            lastModifiedDate: event.lastModifiedDate.map { DateParsing.formatISO8601($0, timeZone: tz) }
         )
     }
 }
@@ -181,6 +184,7 @@ struct ReminderDTO: Codable {
     let completionDate: String?
     let dueDate: String?
     let startDate: String?
+    let timeZone: String?
     let priority: Int
     let notes: String?
     let hasAlarms: Bool
@@ -189,22 +193,24 @@ struct ReminderDTO: Codable {
     let lastModifiedDate: String?
 
     static func from(_ reminder: EKReminder) -> ReminderDTO {
-        ReminderDTO(
+        let tz = reminder.timeZone
+        return ReminderDTO(
             identifier: reminder.calendarItemIdentifier,
             title: reminder.title ?? "",
             calendar: CalendarRefDTO.from(reminder.calendar),
             isCompleted: reminder.isCompleted,
-            completionDate: reminder.completionDate.map { DateParsing.formatISO8601($0) },
+            completionDate: reminder.completionDate.map { DateParsing.formatISO8601($0, timeZone: tz) },
             dueDate: reminder.dueDateComponents.flatMap { Calendar.current.date(from: $0) }
-                .map { DateParsing.formatISO8601($0) },
+                .map { DateParsing.formatISO8601($0, timeZone: tz) },
             startDate: reminder.startDateComponents.flatMap { Calendar.current.date(from: $0) }
-                .map { DateParsing.formatISO8601($0) },
+                .map { DateParsing.formatISO8601($0, timeZone: tz) },
+            timeZone: tz?.identifier,
             priority: reminder.priority,
             notes: reminder.notes,
             hasAlarms: reminder.hasAlarms,
             hasRecurrenceRules: reminder.hasRecurrenceRules,
-            creationDate: reminder.creationDate.map { DateParsing.formatISO8601($0) },
-            lastModifiedDate: reminder.lastModifiedDate.map { DateParsing.formatISO8601($0) }
+            creationDate: reminder.creationDate.map { DateParsing.formatISO8601($0, timeZone: tz) },
+            lastModifiedDate: reminder.lastModifiedDate.map { DateParsing.formatISO8601($0, timeZone: tz) }
         )
     }
 }

@@ -620,9 +620,10 @@ enum CLI {
         let eventFields: [String: String] = [
             "identifier": "Unique event ID (use this for get/update/delete)",
             "title": "Event title",
-            "startDate": "Start date/time (ISO 8601)",
-            "endDate": "End date/time (ISO 8601)",
+            "startDate": "Start date/time with timezone offset (YYYY-MM-DDTHH:mm:ss+HH:mm)",
+            "endDate": "End date/time with timezone offset (YYYY-MM-DDTHH:mm:ss+HH:mm)",
             "isAllDay": "Whether this is an all-day event",
+            "timeZone": "IANA timezone identifier (e.g. Europe/Berlin) or null for floating events",
             "calendar": "Object with identifier and title of the containing calendar",
             "location": "Location string or null",
             "notes": "Notes/description or null",
@@ -635,8 +636,8 @@ enum CLI {
             "hasAttendees": "Whether there are attendees",
             "alarms": "Array of alarms with relativeOffset (seconds) or absoluteDate",
             "attendees": "Array of attendees with name, status, role, type, isCurrentUser",
-            "creationDate": "When the event was created (ISO 8601) or null",
-            "lastModifiedDate": "When the event was last modified (ISO 8601) or null",
+            "creationDate": "When the event was created (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
+            "lastModifiedDate": "When the event was last modified (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
         ]
 
         let reminderFields: [String: String] = [
@@ -644,15 +645,16 @@ enum CLI {
             "title": "Reminder title",
             "calendar": "Object with identifier and title of the containing calendar",
             "isCompleted": "Whether the reminder is marked as done",
-            "completionDate": "When it was completed (ISO 8601) or null",
-            "dueDate": "Due date (ISO 8601) or null",
-            "startDate": "Start date (ISO 8601) or null",
+            "completionDate": "When it was completed (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
+            "dueDate": "Due date (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
+            "startDate": "Start date (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
+            "timeZone": "IANA timezone identifier (e.g. Europe/Berlin) or null for floating reminders",
             "priority": "Priority 0-9 (0=none, 1-4=high, 5=medium, 6-8=low, 9=low)",
             "notes": "Notes/description or null",
             "hasAlarms": "Whether alarms are set",
             "hasRecurrenceRules": "Whether this reminder repeats",
-            "creationDate": "When the reminder was created (ISO 8601) or null",
-            "lastModifiedDate": "When the reminder was last modified (ISO 8601) or null",
+            "creationDate": "When the reminder was created (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
+            "lastModifiedDate": "When the reminder was last modified (YYYY-MM-DDTHH:mm:ss+HH:mm) or null",
         ]
 
         return [
