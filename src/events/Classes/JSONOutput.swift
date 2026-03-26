@@ -29,6 +29,7 @@ enum JSONOutput {
             ]),
         ]
         self.writeJSON(envelope, to: .standardError)
+        FileHandle.standardError.write(Data("Use 'events -h' for help.\n".utf8))
         exit(error.exitCode)
     }
 

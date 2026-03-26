@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Recurrence support for `events create`: `--recurrence daily|weekly|monthly|yearly`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`
 - Hierarchical help system: `events -h` for command overview, `<command> -h` for detailed per-command help with parameters and output schema
 - `-h` and `--help` flags supported on all commands and subcommands
+- Help hint (`Use 'events -h' for help.`) appended to all error output on stderr
 
 ### Changed
 - Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
