@@ -47,4 +47,19 @@ final class CalendarService {
         Logger.debug("Found \(calendarDTOs.count) calendars")
         return calendarDTOs
     }
+
+    // MARK: - Resolve by Name
+
+    func resolveEventCalendarIdentifier(name: String) throws -> String {
+        let calendars = self.manager.store.calendars(for: .event)
+        if let match = calendars.first(where: { $0.title == name }) {
+            Logger.debug("Resolved calendar '\(name)' to identifier: \(match.calendarIdentifier)")
+            return match.calendarIdentifier
+        }
+
+        let available = calendars.map(\.title).joined(separator: ", ")
+        throw EventsError.configError(
+            message: "Default calendar '\(name)' not found. Available calendars: \(available)"
+        )
+    }
 }

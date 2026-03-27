@@ -17,6 +17,8 @@ enum EventsError: Error {
     case missingRequiredArgument(name: String)
     case invalidArgument(name: String, value: String)
     case unknownCommand(command: String)
+    case configAlreadyExists(path: String)
+    case configError(message: String)
 
     var code: String {
         switch self {
@@ -36,6 +38,10 @@ enum EventsError: Error {
             "INVALID_ARGUMENT"
         case .unknownCommand:
             "UNKNOWN_COMMAND"
+        case .configAlreadyExists:
+            "CONFIG_ALREADY_EXISTS"
+        case .configError:
+            "CONFIG_ERROR"
         }
     }
 
@@ -57,6 +63,10 @@ enum EventsError: Error {
             "Invalid value '\(value)' for argument: \(name)"
         case let .unknownCommand(command):
             "Unknown command: \(command)"
+        case let .configAlreadyExists(path):
+            "Configuration file already exists at: \(path)"
+        case let .configError(message):
+            message
         }
     }
 
@@ -66,7 +76,8 @@ enum EventsError: Error {
             2
         case .notFound:
             3
-        case .validationError, .missingRequiredArgument, .invalidArgument, .unknownCommand:
+        case .validationError, .missingRequiredArgument, .invalidArgument, .unknownCommand,
+             .configAlreadyExists, .configError:
             4
         case .calendarReadOnly:
             5

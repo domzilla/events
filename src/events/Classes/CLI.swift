@@ -67,6 +67,22 @@ enum CLI {
             if self.wantsHelp(args) { self.handleCommandHelp("delete") }
             await self.handleEventsDelete(args: args)
 
+        case "config":
+            guard args.count > 1 else {
+                JSONOutput.error(.unknownCommand(command: "config"))
+            }
+            if args[1] == "-h" || args[1] == "--help" || args[1] == "help" {
+                self.handleCommandHelp("config init")
+            }
+            let configSubCommand = args[1]
+            switch configSubCommand {
+            case "init":
+                if self.wantsHelp(Array(args.dropFirst())) { self.handleCommandHelp("config init") }
+                self.handleConfigInit()
+            default:
+                JSONOutput.error(.unknownCommand(command: "config \(configSubCommand)"))
+            }
+
         case "reminders":
             guard args.count > 1 else {
                 JSONOutput.error(.unknownCommand(command: "reminders"))
@@ -136,6 +152,7 @@ enum CLI {
             HelpCommandDTO(command: "events reminders update <id>", description: "Update an existing reminder"),
             HelpCommandDTO(command: "events reminders delete <id>", description: "Delete a reminder"),
             HelpCommandDTO(command: "events reminders complete <id>", description: "Mark a reminder as completed"),
+            HelpCommandDTO(command: "events config init", description: "Generate default configuration file"),
         ]
         let text = HelpFormatter.formatCommandList(
             title: "events - Calendar and Reminders CLI",
@@ -299,19 +316,46 @@ enum CLI {
             let manager = EventStoreManager.shared
             try await manager.ensureEventsAccess()
             let service = EventService(manager: manager)
+            let config = ConfigManager.load()
 
             let title = try self.requiredFlagValue(for: "title", in: args)
             let startStr = try self.requiredFlagValue(for: "start", in: args)
-            let endStr = try self.requiredFlagValue(for: "end", in: args)
-            let calendarID = try self.requiredFlagValue(for: "calendar", in: args)
-
             let startDate = try DateParsing.parseISO8601(startStr)
-            let endDate = try DateParsing.parseISO8601(endStr)
+
+            // Calendar: flag > config default (resolved by name) > error
+            let calendarID: String
+            if let flagCalendarID = self.flagValue(for: "calendar", in: args) {
+                calendarID = flagCalendarID
+            } else if let defaultCalendarName = config.defaultCalendar {
+                let calendarService = CalendarService(manager: manager)
+                calendarID = try calendarService.resolveEventCalendarIdentifier(name: defaultCalendarName)
+            } else {
+                throw EventsError.configError(
+                    message: "No calendar specified. Use --calendar or set default_calendar in ~/.config/events/config"
+                )
+            }
+
+            // End date: flag > calculated from start + duration (config or 60 min default)
+            let endDate: Date
+            if let endStr = self.flagValue(for: "end", in: args) {
+                endDate = try DateParsing.parseISO8601(endStr)
+            } else {
+                let durationMinutes = config.defaultDuration ?? 60
+                endDate = Calendar.current.date(
+                    byAdding: .minute,
+                    value: durationMinutes,
+                    to: startDate
+                ) ?? startDate
+            }
+
             let isAllDay = self.hasFlag("all-day", in: args)
             let location = self.flagValue(for: "location", in: args)
             let notes = self.flagValue(for: "notes", in: args)
             let url = self.flagValue(for: "url", in: args)
-            let alarmMinutes = self.flagValue(for: "alarm", in: args).flatMap { Int($0) }
+
+            // Alarm: flag > config default > none
+            let alarmMinutes = self.flagValue(for: "alarm", in: args)
+                .flatMap { Int($0) } ?? config.defaultAlarm
 
             let recurrence = self.flagValue(for: "recurrence", in: args)
                 .flatMap { self.parseRecurrenceFrequency($0) }
@@ -608,6 +652,19 @@ enum CLI {
         }
     }
 
+    // MARK: - Config Init
+
+    private static func handleConfigInit() {
+        do {
+            try ConfigManager.createDefaultConfig()
+            JSONOutput.success(["path": ConfigManager.configFile])
+        } catch let error as EventsError {
+            JSONOutput.error(error)
+        } catch {
+            JSONOutput.error(.eventKitError(underlying: error))
+        }
+    }
+
     // MARK: - Command List
 
     // swiftlint:disable function_body_length
@@ -807,14 +864,14 @@ enum CLI {
                     ParameterInfoDTO(
                         name: "--end",
                         type: "YYYY-MM-DDTHH:mm:ss",
-                        required: true,
-                        description: "Event end date/time (must be after start)"
+                        required: false,
+                        description: "Event end date/time. If omitted, calculated from start + default_duration config (fallback: 60 min)"
                     ),
                     ParameterInfoDTO(
                         name: "--calendar",
                         type: "calendar identifier",
-                        required: true,
-                        description: "Target calendar (must not be read-only)"
+                        required: false,
+                        description: "Target calendar (must not be read-only). Falls back to default_calendar from config"
                     ),
                     ParameterInfoDTO(
                         name: "--all-day",
@@ -839,7 +896,7 @@ enum CLI {
                         name: "--alarm",
                         type: "integer (minutes)",
                         required: false,
-                        description: "Add alarm N minutes before event start"
+                        description: "Add alarm N minutes before event start. Falls back to default_alarm from config"
                     ),
                     ParameterInfoDTO(
                         name: "--recurrence",
@@ -1184,6 +1241,20 @@ enum CLI {
                 output: OutputInfoDTO(
                     description: "The updated reminder object with isCompleted=true",
                     fields: reminderFields
+                )
+            ),
+
+            // MARK: Config - Init
+
+            CommandInfoDTO(
+                command: "events config init",
+                description: "Generate a default configuration file at ~/.config/events/config. All values are commented out with documentation. Fails if the file already exists.",
+                parameters: [],
+                output: OutputInfoDTO(
+                    description: "The path to the created configuration file",
+                    fields: [
+                        "path": "Absolute path to the created config file",
+                    ]
                 )
             ),
         ]

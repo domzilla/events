@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- `events config init` command to generate default configuration file at `~/.config/events/config`
+- Configuration support: `default_calendar` (calendar name), `default_duration` (minutes), `default_alarm` (minutes)
+- Calendar name resolution: config `default_calendar` is matched by name against available calendars
+
+### Changed
+- `--calendar` flag on `events create` is now optional (falls back to `default_calendar` from config)
+- `--end` flag on `events create` is now optional (calculated from start + `default_duration` config, fallback: 60 min)
+- `--alarm` flag on `events create` now falls back to `default_alarm` from config
+
+## [1.0.1] - 2026-03-26
+
+### Changed
+- Bump GitHub Actions to v5 for Node.js 24 compatibility
+
 ## [1.0.0] - 2026-03-26
 
 ### Added
