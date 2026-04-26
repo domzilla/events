@@ -8,62 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `events config init` command to generate default configuration file at `~/.config/events/config`
-- Configuration support: `default_calendar` (calendar name), `default_duration` (minutes), `default_alarm` (minutes)
-- Calendar name resolution: config `default_calendar` is matched by name against available calendars
+- `events config init` generates a default configuration file at `~/.config/events/config`.
+- Configuration support for `default_calendar`, `default_duration`, and `default_alarm`.
 
 ### Changed
-- `--calendar` flag on `events create` is now optional (falls back to `default_calendar` from config)
-- `--end` flag on `events create` is now optional (calculated from start + `default_duration` config, fallback: 60 min)
-- `--alarm` flag on `events create` now falls back to `default_alarm` from config
+- The `--calendar`, `--end`, and `--alarm` flags on `events create` are now optional and fall back to their configured defaults.
 
 ## [1.0.1] - 2026-03-26
 
 ### Changed
-- Bump GitHub Actions to v5 for Node.js 24 compatibility
+- Bumped GitHub Actions to v5 for Node.js 24 compatibility.
 
 ## [1.0.0] - 2026-03-26
 
 ### Added
-- Homebrew tap publishing via GitHub Actions (xcodebuild-based bottle builds for arm64 and x86_64)
-- `.publish` configuration for the `publish` CLI tool
-- MIT license
-- `--alarm <minutes>` flag on `events update` and `events reminders update` commands
-- `isSubscribed` and `isImmutable` fields to calendar JSON output
-- Recurrence support for `events create`: `--recurrence daily|weekly|monthly|yearly`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`
-- Hierarchical help system: `events -h` for command overview, `<command> -h` for detailed per-command help with parameters and output schema
-- `-h` and `--help` flags supported on all commands and subcommands
-- Help hint (`Use 'events -h' for help.`) appended to all error output on stderr
-- `--version` / `-v` flag to display version and build number (read from embedded Info.plist)
-- Date parsing now accepts local datetimes without timezone (e.g. `2026-03-27T09:00:00`), interpreted as local time
-- `timeZone` field (IANA identifier) in event and reminder JSON output
-- Date output now includes timezone offset (e.g. `2026-03-27T09:00:00+01:00`)
-- `--occurrence-date` flag on `get`, `update`, and `delete` to target a specific occurrence of a recurring event
-- CLI skeleton with JSON output envelope (`{"success": true/false, ...}`) and typed exit codes
-- `events status` — show authorization status and full command reference
-- `events calendars list` — list all event and reminder calendars with identifiers, types, colors
-- `events list` — list events by `--date`, `--from`/`--to` date range, with optional `--calendar` filter
-- `events search --query <keyword>` — search events by title, location, and notes (client-side filtering)
-- `events get <identifier>` — get a single event by identifier
-- `events create` — create events with title, start/end dates, calendar (required), location, notes, URL, alarm
-- `events update <identifier>` — update event properties with `--span this|future` for recurring events
-- `events delete <identifier>` — delete events with `--span this|future` support
-- `events reminders list` — list reminders with `--completed`/`--incomplete`/`--overdue`, `--due-before`/`--due-after` filters
-- `events reminders search --query <keyword>` — search reminders by title, location, and notes
-- `events reminders get <identifier>` — get a single reminder by identifier
-- `events reminders create` — create reminders with title, calendar (required), due date, priority, notes, alarm
-- `events reminders update <identifier>` — update reminder properties
-- `events reminders delete <identifier>` — delete a reminder
-- `events reminders complete <identifier>` — mark a reminder as completed
-- EventStoreManager with TCC authorization flow for calendar and reminder access
-- ISO 8601 date parsing with full datetime, fractional seconds, and date-only support
+- Initial release of `events`, a Swift CLI that wraps EventKit and outputs structured JSON.
+- Calendar event commands: `list`, `search`, `get`, `create`, `update`, `delete`.
+- Reminder commands: `reminders list`, `search`, `get`, `create`, `update`, `delete`, `complete`.
+- `events status` reports authorization state, and `events calendars list` enumerates available calendars.
+- Recurrence support on `events create` (`--recurrence`, `--recurrence-interval`, `--recurrence-end`, `--recurrence-count`).
+- `--occurrence-date` flag on `get`, `update`, and `delete` to target a single occurrence of a recurring event.
+- `--alarm <minutes>` flag on `events update` and `events reminders update`.
+- `--span this|future` for updating and deleting recurring events.
+- Hierarchical help system: `events -h` and `<command> -h` show usage, parameters, and output schema.
+- `--version` / `-v` flag.
+- Date parsing accepts local datetimes without timezone, and output now includes the timezone offset and IANA `timeZone` field.
+- Homebrew tap publishing via GitHub Actions, plus a `.publish` configuration and an MIT license.
 
 ### Changed
-- Help output (`-h`/`--help`) now uses human-readable plain text format instead of JSON
-- Running `events` with no command now shows help instead of an error
-- Error messages for positional arguments now show `<identifier>` instead of `--identifier`
-- Removed stale "Run 'events status' for available commands" from unknown command error
-- `events status` now returns only authorization status (no longer includes command docs)
-- Replaced DZFoundation logging with CLI-specific Logger that writes to stderr
-- Debug output no longer pollutes stdout JSON stream
-- Removed DZFoundation dependency entirely
+- Help output now uses human-readable plain text instead of JSON.
+- Running `events` with no command shows help instead of an error.
+- `events status` returns only authorization status; command documentation moved into `-h`.
+- Debug output goes to stderr so the JSON stdout stream stays clean.
