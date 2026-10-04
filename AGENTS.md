@@ -17,11 +17,6 @@ A Swift CLI tool that wraps Apple's EventKit framework, enabling AI agents to in
 Changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Additional Guides
-- Swift 6 concurrency: `~/Agents/Guides/swift6-concurrency-guide.md`
-- Swift 6 migration (compact): `~/Agents/Guides/swift6-migration-compact-guide.md`
-- Swift 6 migration (full): `~/Agents/Guides/swift6-migration-full-guide.md`
-
 ## Logging (MANDATORY)
 This project uses a built-in `Logger` enum (`Classes/Logger.swift`) that writes to **stderr**.
 
