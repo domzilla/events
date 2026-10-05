@@ -4,10 +4,9 @@
 A Swift CLI tool that wraps Apple's EventKit framework, enabling AI agents to interact with the user's Calendar and Reminders via structured JSON output. All commands output JSON to stdout with typed exit codes.
 
 ## Tech Stack
-- **Language**: Swift 6
+- **Language**: Swift
 - **IDE**: Xcode
 - **Platforms**: macOS
-- **Minimum Deployment**: macOS 14.0
 
 ## Guides (MANDATORY)
 Read `~/Agents/Guides/xcode-project-guide.md` in full before planning or editing anything.
@@ -15,11 +14,6 @@ Read `~/Agents/Guides/xcode-project-guide.md` in full before planning or editing
 Read these in full before touching the matching code:
 - Swift style (`.swift`): `~/Agents/Style/swift-swiftui-style-guide.md`
 - Accessibility (UI code, XIBs, storyboards): `~/Agents/Guides/accessibility-guide.md`
-
-## Changelog (MANDATORY)
-**All important user facing changes** (fixes, additions, deletions, changes) must be written to CHANGELOG.md.
-Changelog format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Logging (MANDATORY)
 This project uses a built-in `Logger` enum (`Classes/Logger.swift`) that writes to **stderr**.
@@ -41,63 +35,17 @@ Logger.error(error)               // [ERROR] fetchData():45 Network unavailable
 
 Both functions are no-ops in release builds.
 
-## API Documentation
-Local Apple API documentation is available at:
-`~/Agents/API Documentation/Apple/`
-
-The `search` binary is located **inside** the documentation folder:
-```bash
-~/Agents/API\ Documentation/Apple/search --help  # Run once per session
-~/Agents/API\ Documentation/Apple/search "view controller" --language swift
-~/Agents/API\ Documentation/Apple/search "NSWindow" --type Class
-```
-
-## Xcode Project Files (CATASTROPHIC — DO NOT TOUCH)
-- **NEVER edit Xcode project files** (`.xcodeproj`, `.xcworkspace`, `project.pbxproj`, `.xcsettings`, etc.)
-- Editing these files will corrupt the project — this is **catastrophic and unrecoverable**
-- Only the user edits project settings, build phases, schemes, and file references manually in Xcode
-- If a file needs to be added to the project, **stop and tell the user** — do not attempt it yourself
-- Use `xcodebuild` for building/testing only — never for project manipulation
-- **Exception**: Only proceed if the user gives explicit permission for a specific edit
-  
-## File System Synchronized Groups (Xcode 16+)
-This project uses **File System Synchronized Groups** (internally `PBXFileSystemSynchronizedRootGroup`), introduced in Xcode 16. This means:
-- The `Classes/` and `Resources/` directories are **directly synchronized** with the file system
-- **You CAN freely create, move, rename, and delete files** in these directories
-- Xcode automatically picks up all changes — no project file updates needed
-- This is different from legacy Xcode groups, which required manual project file edits
-
-**Bottom line:** Modify source files in `Classes/` and `Resources/` freely. Just never touch the `.xcodeproj` files themselves.
-
-## Build & Format Commands
-**MANDATORY:** Never write build output into the project directory; use Xcode's default DerivedData location or pass `-derivedDataPath` pointing outside the project tree.
+## Build Commands
 ```bash
 # Build
 xcodebuild -scheme "events" -destination "platform=macOS" build
-
-# Run tests
-xcodebuild -scheme "events" -destination "platform=macOS" test
 
 # Clean
 xcodebuild -scheme "events" clean
 ```
 
-## Code Formatting (MANDATORY)
-**Always run SwiftFormat after a successful build:**
-```bash
-swiftformat .
-```
-
-SwiftFormat configuration is defined in `.swiftformat` at the project root. This enforces:
-- 4-space indentation
-- Explicit `self.` usage
-- K&R brace style
-- Trailing commas in collections
-- Consistent wrapping rules
-
-**Do not commit unformatted code.**
-
----
+## Testing (MANDATORY)
+No test targets exist in this project.
 
 ## Help Output / Status Command (MANDATORY)
 The help system is the **single source of truth** for AI agents. `events -h` lists all commands, `<command> -h` shows full parameter and output documentation.
@@ -114,4 +62,3 @@ The help system is the **single source of truth** for AI agents. `events -h` lis
 - Use `async/await` for async work (EventKit callback APIs wrapped with `withCheckedContinuation`)
 - `@MainActor` on all service classes to satisfy Swift 6 Sendable requirements with non-Sendable EKEventStore
 - Use `Logger.debug`/`Logger.error` for debug logging — never `print()` (stdout is JSON output)
-- Always run `swiftformat .` after successful builds before committing
