@@ -9,8 +9,10 @@ A Swift CLI tool that wraps Apple's EventKit framework, enabling AI agents to in
 - **Platforms**: macOS
 - **Minimum Deployment**: macOS 14.0
 
-## Style & Conventions (MANDATORY)
-**Strictly follow** the Swift/SwiftUI style guide: `~/Agents/Style/swift-swiftui-style-guide.md`
+## Guides (MANDATORY)
+- Swift style: `~/Agents/Style/swift-swiftui-style-guide.md`
+- Accessibility: `~/Agents/Guides/accessibility-guide.md`
+- Xcode projects: `~/Agents/Guides/xcode-project-guide.md`
 
 ## Changelog (MANDATORY)
 **All important user facing changes** (fixes, additions, deletions, changes) must be written to CHANGELOG.md.
