@@ -1,4 +1,4 @@
-# SwiftFormat Configuration for Swift 6
+# SwiftFormat Configuration for Swift 5
 # https://github.com/nicklockwood/SwiftFormat
 
 # Self/indentation rules to match root repo
@@ -6,7 +6,7 @@
 --ifdef no-indent
 
 # Swift version
---swiftversion 6
+--swiftversion 5
 
 # Indentation
 --indent 4
